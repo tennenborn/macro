@@ -1,12 +1,29 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Provider } from 'mobx-react';
+import { RouterStore, syncHistoryWithStore } from 'mobx-react-router';
+import createBrowserHistory from 'history/createBrowserHistory';
+import AuthStore from './stores/auth';
 import App from './App';
-import * as serviceWorker from './serviceWorker';
+import './index.css';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+window['__LOADED_MICRO_MODULES__'] = {};
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+const browserHistory = createBrowserHistory();
+const routingStore = new RouterStore();
+
+const stores = {};
+stores.routingStore = routingStore;
+stores.authStore = new AuthStore(stores);
+
+const history = syncHistoryWithStore(browserHistory, routingStore);
+
+ReactDOM.render(
+	<Provider { ...stores }>
+		<Router>
+			<App />
+		</Router>
+	</Provider>,
+	document.getElementById('root'),
+);
